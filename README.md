@@ -14,5 +14,6 @@ Use it at your own risk!
 Directories:
 Kaddu_Klock/              Main directory
 Kaddu_Klock/docs          Documentation
+Kaddu_Klock/Fitzing       Fritzing files (schematics, pcb, etc.)
 Kaddu_Klock/libraries	  (Custom) Library used in HerBot (none at the moment)
 

@@ -24,11 +24,15 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println(versionHeader);
+
+  setTime(12, 0, 0, 1, 1, 2000);
 }
 
 
 void loop()
 {
+  Serial.println("Current time : " + hour() + ":" + minute() + ":" + second() + " " + day() + "/" + month() + "-" + year());
+
   delay(1000);
 }
 
