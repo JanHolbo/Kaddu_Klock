@@ -25,13 +25,13 @@ void setup()
   Serial.begin(9600);
   Serial.println(versionHeader);
 
-  setTime(12, 0, 0, 1, 1, 2000);
+  setTime(12, 0, 0, 1, 1, 2015);
 }
 
 
 void loop()
 {
-  Serial.println("Current time : " + hour() + ":" + minute() + ":" + second() + " " + day() + "/" + month() + "-" + year());
+  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
 
   delay(1000);
 }
