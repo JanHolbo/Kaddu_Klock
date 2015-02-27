@@ -27,10 +27,12 @@ const int display_LCD = 4;
 
 // define IO pins
 const int hc595_ser = 2;
-const int hc595_rclk = 5;
+const int hc595_rclk = 3;
 const int hc595_srclk = 4;
-const int hc595_oe = 6;
-const int hc595_srclr = 7;
+//const int hc595_oe = 6;
+const int hc595_srclr = 5;
+
+const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 
 char displayText[9] = "";
 
@@ -41,18 +43,42 @@ const int displayType = display_SevenSegment;
 //            Seven Segment Code
 // ****************************************
 
-const int patterns[] = {B00111111, B00000110, B01011011, 
-                       B01001111, B01100110, B01101101,
-                       B01111101, B00000111, B01111111,
-                       B01101111};
+const int patterns[] = {
+  B00111111, B00000110, B01011011, 
+  B01001111, B01100110, B01101101,
+  B01111101, B00000111, B01111111,
+  B01101111};
 
 void showDisplay7Seg()
 {
-  int pattern = patterns[displayText[5]-48];
+  for (int x = 0; x < 6; x++) {
+    digitalWrite (multiplex[x], HIGH);
+  }
 
-  digitalWrite (hc595_srclk, LOW);
-  shiftOut (hc595_ser, hc595_rclk, MSBFIRST, pattern);
-  digitalWrite (hc595_srclk, HIGH);
+  for (int digit = 0; digit < 6; digit++) {
+
+    int pattern = patterns[displayText[digit]-48];
+
+    digitalWrite (hc595_rclk, LOW);
+    digitalWrite (hc595_rclk, HIGH);
+
+    digitalWrite (hc595_srclr, LOW);       // clear the 74hc595 serial register
+    digitalWrite (hc595_srclr, HIGH);
+
+    digitalWrite (hc595_rclk, LOW);
+    shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
+    digitalWrite (hc595_rclk, HIGH);
+
+    digitalWrite (multiplex[digit], LOW);   // turn on the right digit
+
+    delayMicroseconds (1000);
+
+    digitalWrite (multiplex[digit], HIGH);   // turn on the right digit
+
+    digitalWrite (hc595_rclk, LOW);
+    digitalWrite (hc595_rclk, HIGH);
+
+  }
 }
 
 
@@ -63,17 +89,22 @@ void showDisplay7Seg()
 
 void setup()
 {
-  Serial.begin(9600);                                                 // open serial connection
-  Serial.println(versionHeader);
+//  Serial.begin(9600);                                                 // open serial connection
+//  Serial.println(versionHeader);
 
   setTime(12, 0, 0, 1, 1, 2015);
-  
+
   // Setup digital pins for 74hc595
   pinMode (hc595_ser, OUTPUT);
   pinMode (hc595_rclk, OUTPUT);
   pinMode (hc595_srclk, OUTPUT);
-  pinMode (hc595_oe, OUTPUT);
+  //  pinMode (hc595_oe, OUTPUT);
   pinMode (hc595_srclr, OUTPUT);
+
+  for (int x = 0; x < 8; x++) {
+    pinMode (multiplex[x], OUTPUT);
+    digitalWrite (multiplex[x], HIGH);
+  }
 }
 
 
@@ -86,20 +117,18 @@ void loop()
   displayText[4] = (second() / 10) + 48;
   displayText[5] = (second() % 10) + 48;  
 
-  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
-  Serial.println("displayText : " + String(displayText));
+//  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
+//  Serial.println("displayText : " + String(displayText));
 
 
   switch (displayType) {
-    case display_SevenSegment:
-        showDisplay7Seg();
-      break;
-    default:
-      break;
+  case display_SevenSegment:
+    showDisplay7Seg();
+    break;
+  default:
+    break;
   }
-  
-
-  delay(1000);
 }
+
 
 
