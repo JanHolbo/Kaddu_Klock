@@ -26,31 +26,38 @@ const int display_LEDMatrix = 2;
 const int display_LCD = 4;
 
 // define IO pins
-const int hc595_ser = 2;
-const int hc595_rclk = 3;
-const int hc595_srclk = 4;
+const int hc595_ser = 4;
+const int hc595_rclk = 5;
+const int hc595_srclk = 6;
 //const int hc595_oe = 6;
-const int hc595_srclr = 5;
+const int hc595_srclr = 7;
 
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
+
+const int buttonMinus = 2;
+const int buttonMode = 3;
+const int buttonPlus = 8;
 
 char displayText[9] = "";
 
 // set the display type
-const int displayType = display_SevenSegment;
+//const int displayType = display_SevenSegment;
+const int displayType = display_LEDMatrix;
 
 // ****************************************
 //            Seven Segment Code
 // ****************************************
 
-const int patterns[] = {
+
+void showDisplay7Seg()
+{
+const byte patterns[] = {
   B00111111, B00000110, B01011011, 
   B01001111, B01100110, B01101101,
   B01111101, B00000111, B01111111,
   B01101111};
 
-void showDisplay7Seg()
-{
+
   for (int x = 0; x < 6; x++) {
     digitalWrite (multiplex[x], HIGH);
   }
@@ -83,6 +90,67 @@ void showDisplay7Seg()
 
 
 // ****************************************
+//                LED Matrix Code
+// ****************************************
+
+void showDisplayLEDMatrix()
+{
+  byte const patterns [10][8] = {04, 10, 10, 10, 10, 10, 04, 00,
+                                                      04, 12, 04, 04, 04, 04, 14, 00,
+                                                      04, 10, 02, 02, 04,  8, 14, 00,
+                                                      04, 10, 02, 04, 02, 10, 04, 00,
+                                                      10, 10, 10, 14, 02, 02, 02, 00,
+                                                      14,  8,  8, 04, 02, 10, 04, 00,
+                                                      04, 10,  8, 12, 10, 10, 04, 00,
+                                                      14, 10, 02, 02, 02, 02, 02, 00,
+                                                      04, 10, 10, 04, 10, 10, 04, 00,
+                                                      04, 10, 10, 06, 02, 10, 04, 00};
+  
+  
+  byte pattern;
+  
+
+  for (byte row = 0; row < 8; row++) {
+
+    digitalWrite (hc595_rclk, LOW);
+    digitalWrite (hc595_rclk, HIGH);
+
+    digitalWrite (hc595_srclr, LOW);       // clear the 74hc595 serial register
+    digitalWrite (hc595_srclr, HIGH);
+
+    digitalWrite (hc595_rclk, LOW);
+
+    pattern = patterns[displayText[0]-48][row];
+    pattern = pattern << 4;
+    pattern = pattern + patterns[displayText[1]-48][row];
+    if (displayText[5] & 1) pattern++;
+    pattern = 255 - pattern;
+    shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
+
+    pattern = patterns[displayText[2]-48][row];
+    pattern = pattern << 4;
+    pattern = pattern + patterns[displayText[3]-48][row];
+    pattern = 255 - pattern;
+    shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
+
+    pattern = 1 << row; // row select
+    shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
+
+
+    digitalWrite (hc595_rclk, HIGH);
+
+    delayMicroseconds (1000);
+//    delay (1000);
+
+    digitalWrite (hc595_rclk, LOW);
+    digitalWrite (hc595_rclk, HIGH);
+
+  }
+
+  
+}
+
+// ****************************************
 //                Common Code
 // ****************************************
 
@@ -101,10 +169,18 @@ void setup()
   //  pinMode (hc595_oe, OUTPUT);
   pinMode (hc595_srclr, OUTPUT);
 
-  for (int x = 0; x < 8; x++) {
+  for (int x = 0; x < 7; x++) {
     pinMode (multiplex[x], OUTPUT);
     digitalWrite (multiplex[x], HIGH);
   }
+
+  pinMode (buttonMinus, INPUT);
+  pinMode (buttonMode, INPUT);
+  pinMode (buttonPlus, INPUT);
+}
+
+void interupts()
+{
 }
 
 
@@ -120,10 +196,12 @@ void loop()
 //  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
 //  Serial.println("displayText : " + String(displayText));
 
-
   switch (displayType) {
   case display_SevenSegment:
     showDisplay7Seg();
+    break;
+  case display_LEDMatrix:
+    showDisplayLEDMatrix();
     break;
   default:
     break;
