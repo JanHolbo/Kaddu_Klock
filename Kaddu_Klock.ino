@@ -40,6 +40,17 @@ const int buttonPlus = 8;
 
 char displayText[9] = "";
 
+int statusButtonMinus;
+int statusButtonMode;
+int statusButtonPlus;
+
+
+// Define display mode
+const byte displayMode_Time = 1;
+const byte displayMode_Date = 2;
+const byte displayMode_Year = 3;
+
+
 // set the display type
 //const int displayType = display_SevenSegment;
 const int displayType = display_LEDMatrix;
@@ -140,7 +151,6 @@ void showDisplayLEDMatrix()
     digitalWrite (hc595_rclk, HIGH);
 
     delayMicroseconds (1000);
-//    delay (1000);
 
     digitalWrite (hc595_rclk, LOW);
     digitalWrite (hc595_rclk, HIGH);
@@ -179,10 +189,6 @@ void setup()
   pinMode (buttonPlus, INPUT);
 }
 
-void interupts()
-{
-}
-
 
 void loop()
 {
@@ -206,6 +212,10 @@ void loop()
   default:
     break;
   }
+
+  statusButtonMinus = digitalRead (buttonMinus);
+  statusButtonMode = digitalRead (buttonMode);
+  statusButtonPlus = digitalRead (buttonPlus);
 }
 
 
