@@ -34,8 +34,8 @@ const int hc595_srclr = 7;
 
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 
-const int buttonMinus = 2;
-const int buttonMode = 3;
+const int buttonMinus = 10;
+const int buttonMode = 9;
 const int buttonPlus = 8;
 
 char displayText[9] = "";
@@ -50,6 +50,8 @@ const byte displayMode_Time = 1;
 const byte displayMode_Date = 2;
 const byte displayMode_Year = 3;
 
+// set the display mode
+int displayMode = displayMode_Time;
 
 // set the display type
 //const int displayType = display_SevenSegment;
@@ -111,7 +113,7 @@ void showDisplayLEDMatrix()
                                                       04, 10, 02, 02, 04,  8, 14, 00,
                                                       04, 10, 02, 04, 02, 10, 04, 00,
                                                       10, 10, 10, 14, 02, 02, 02, 00,
-                                                      14,  8,  8, 04, 02, 10, 04, 00,
+                                                      14,  8,  12, 02, 02, 10, 04, 00,
                                                       04, 10,  8, 12, 10, 10, 04, 00,
                                                       14, 10, 02, 02, 02, 02, 02, 00,
                                                       04, 10, 10, 04, 10, 10, 04, 00,
@@ -160,8 +162,22 @@ void showDisplayLEDMatrix()
   
 }
 
+
 // ****************************************
-//                Common Code
+//         Interrupt  Handling Code
+// ****************************************
+
+void buttonStateChange ()
+{
+  if (digitalRead (buttonMode) == HIGH)
+  {
+    displayMode++;
+    if (displayMode >=4) { displayMode = 1; }
+  }
+}
+
+// ****************************************
+//                 Main Code
 // ****************************************
 
 
@@ -187,17 +203,45 @@ void setup()
   pinMode (buttonMinus, INPUT);
   pinMode (buttonMode, INPUT);
   pinMode (buttonPlus, INPUT);
+
+  digitalWrite (buttonMinus, HIGH);        // Enable internal pull-up resistor
+  digitalWrite (buttonMode, HIGH);        // Enable internal pull-up resistor
+  digitalWrite (buttonPlus, HIGH);        // Enable internal pull-up resistor
+
+  attachInterrupt (2, buttonStateChange, CHANGE);
 }
 
 
 void loop()
 {
-  displayText[0] = (hour() / 10) + 48;
-  displayText[1] = (hour() % 10) + 48;  
-  displayText[2] = (minute() / 10) + 48;
-  displayText[3] = (minute() % 10) + 48;  
-  displayText[4] = (second() / 10) + 48;
-  displayText[5] = (second() % 10) + 48;  
+  switch (displayMode) {
+    case displayMode_Time:
+      displayText[0] = (hour() / 10) + 48;
+      displayText[1] = (hour() % 10) + 48;  
+      displayText[2] = (minute() / 10) + 48;
+      displayText[3] = (minute() % 10) + 48;  
+      displayText[4] = (second() / 10) + 48;
+      displayText[5] = (second() % 10) + 48;
+      break;
+    case displayMode_Date:
+      displayText[0] = (day() / 10) + 48;
+      displayText[1] = (day() % 10) + 48;
+      displayText[2] = (month() / 10) + 48;
+      displayText[3] = (month() % 10) + 48;
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    case displayMode_Year:
+      displayText[0] = (year() / 1000) + 48;
+      displayText[1] = ((year() % 1000) / 100) + 48;
+      displayText[2] = ((year() % 100) / 10) + 48;
+      displayText[3] = (year() % 10) + 48;
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    default:
+      break;
+  }
 
 //  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
 //  Serial.println("displayText : " + String(displayText));
@@ -217,6 +261,4 @@ void loop()
   statusButtonMode = digitalRead (buttonMode);
   statusButtonPlus = digitalRead (buttonPlus);
 }
-
-
 
