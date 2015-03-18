@@ -158,27 +158,7 @@ void showDisplayLEDMatrix()
     digitalWrite (hc595_rclk, HIGH);
 
   }
-
-  
 }
-
-
-// ****************************************
-//         Interrupt  Handling Code
-// ****************************************
-
-void buttonStateChange ()
-{
-  if (digitalRead (buttonMode) == HIGH)
-  {
-    displayMode++;
-    if (displayMode >=4) { displayMode = 1; }
-  }
-}
-
-// ****************************************
-//                 Main Code
-// ****************************************
 
 
 void setup()
@@ -204,11 +184,11 @@ void setup()
   pinMode (buttonMode, INPUT);
   pinMode (buttonPlus, INPUT);
 
+  pinMode (13, OUTPUT);       // Use internal LED on pin 13 as debug display
+
   digitalWrite (buttonMinus, HIGH);        // Enable internal pull-up resistor
   digitalWrite (buttonMode, HIGH);        // Enable internal pull-up resistor
   digitalWrite (buttonPlus, HIGH);        // Enable internal pull-up resistor
-
-  attachInterrupt (2, buttonStateChange, CHANGE);
 }
 
 
