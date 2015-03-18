@@ -58,6 +58,7 @@ const byte displayMode_SetMinute = 130;
 const byte displayMode_SetDay = 131;
 const byte displayMode_SetMonth = 132;
 const byte displayMode_SetYear = 133;
+const byte displayMode_SetOverrun = 134;     // Pseudo displayMode_Set. Should always be one bigger than the last, normal displayMode_Set
 
 
 // set the display mode
@@ -118,16 +119,66 @@ const byte patterns[] = {
 
 void showDisplayLEDMatrix()
 {
-  byte const patterns [10][8] = {04, 10, 10, 10, 10, 10, 04, 00,
-                                                      04, 12, 04, 04, 04, 04, 14, 00,
-                                                      04, 10, 02, 02, 04,  8, 14, 00,
-                                                      04, 10, 02, 04, 02, 10, 04, 00,
-                                                      10, 10, 10, 14, 02, 02, 02, 00,
-                                                      14,  8,  12, 02, 02, 10, 04, 00,
-                                                      04, 10,  8, 12, 10, 10, 04, 00,
-                                                      14, 10, 02, 02, 02, 02, 02, 00,
-                                                      04, 10, 10, 04, 10, 10, 04, 00,
-                                                      04, 10, 10, 06, 02, 10, 04, 00};
+  byte const patterns [64][8] = {
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " (space)
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    04, 10, 10, 10, 10, 10, 04, 00,     // "0"
+    04, 12, 04, 04, 04, 04, 14, 00,     // "1"
+    04, 10, 02, 02, 04,  8, 14, 00,     // "2"
+    04, 10, 02, 04, 02, 10, 04, 00,     // "3"
+    10, 10, 10, 14, 02, 02, 02, 00,     // "4"
+    14,  8,  12, 02, 02, 10, 04, 00,     // "5"
+    04, 10,  8, 12, 10, 10, 04, 00,     // "6"
+    14, 10, 02, 02, 02, 02, 02, 00,     // "7"
+    04, 10, 10, 04, 10, 10, 04, 00,     // "8"
+    04, 10, 10, 06, 02, 10, 04, 00,     // "9"
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // " " 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "A" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "B" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "C" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "D" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "E" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "F" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "G" 
+    238, 68, 68, 124, 68, 68, 238, 00,     // "H" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "I" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "J" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "K" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "L" 
+    120, 198, 168, 146, 130, 130, 130, 00,     // "M" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "N" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "O" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "P" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "Q" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "R" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "S" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "T" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "U" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "V" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "W" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "X" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "y" 
+    00, 00, 00, 00, 00, 00, 00, 00,     // "Z" 
+    00, 00, 00, 00, 00, 00, 00, 00};
   
   
   byte pattern;
@@ -143,16 +194,16 @@ void showDisplayLEDMatrix()
 
     digitalWrite (hc595_rclk, LOW);
 
-    pattern = patterns[displayText[0]-48][row];
+    pattern = patterns[displayText[0]-32][row];
     pattern = pattern << 4;
-    pattern = pattern + patterns[displayText[1]-48][row];
+    pattern = pattern + patterns[displayText[1]-32][row];
     if (displayText[5] & 1) pattern++;
     pattern = 255 - pattern;
     shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
 
-    pattern = patterns[displayText[2]-48][row];
+    pattern = patterns[displayText[2]-32][row];
     pattern = pattern << 4;
-    pattern = pattern + patterns[displayText[3]-48][row];
+    pattern = pattern + patterns[displayText[3]-32][row];
     pattern = 255 - pattern;
     shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
 
@@ -229,6 +280,46 @@ void loop()
       displayText[4] = 32;
       displayText[5] = 32;
       break;
+    case displayMode_SetHour:
+      displayText[0] = (hour() / 10) + 48;
+      displayText[1] = (hour() % 10) + 48;  
+      displayText[2] = 'H';
+      displayText[3] = 'R';  
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    case displayMode_SetMinute:
+      displayText[0] = 'M';
+      displayText[1] = 'I';  
+      displayText[2] = (minute() / 10) + 48;
+      displayText[3] = (minute() % 10) + 48;  
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    case displayMode_SetDay:
+      displayText[0] = (day() / 10) + 48;
+      displayText[1] = (day() % 10) + 48;  
+      displayText[2] = 'D';
+      displayText[3] = 'A';  
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    case displayMode_SetMonth:
+      displayText[0] = 'M';
+      displayText[1] = 'O';  
+      displayText[2] = (month() / 10) + 48;
+      displayText[3] = (month() % 10) + 48;  
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
+    case displayMode_SetYear:
+      displayText[0] = (year() / 1000) + 48;
+      displayText[1] = ((year() % 1000) / 100) + 48;
+      displayText[2] = ((year() % 100) / 10) + 48;
+      displayText[3] = (year() % 10) + 48;
+      displayText[4] = 32;
+      displayText[5] = 32;
+      break;
     default:     // default should not happen, just here for precaution.
       break;
   }
@@ -265,7 +356,7 @@ void loop()
   else
   {
     digitalWrite(13, LOW);
-    if (modeButtonPress >= 5)
+    if (modeButtonPress >= 10)
      {
        displayMode++;
        modeButtonPress = 0;
@@ -281,11 +372,23 @@ void loop()
            displayMode++;
            modeStatus = 0;
          }
+       } else if (displayMode > 128)
+       {
+         modeStatus++;
+         
+         if (modeStatus > 1000)     // wait a few seconds before changing the displayMode
+         {
+           displayMode = displayMode_Time;
+           modeStatus = 0;
+         }
        }
      }
     if (displayMode == displayMode_Overrun)     // if we have moved beyond the last displayMode
     {
       displayMode = displayMode_Time;
+    } else if (displayMode == displayMode_SetOverrun)     // if we have moved beyond the last displayMode
+    {
+      displayMode = displayMode_SetHour;
     }
 
   }
