@@ -32,7 +32,7 @@ const int hc595_srclk = 6;
 //const int hc595_oe = 6;
 const int hc595_srclr = 7;
 
-const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
+const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 14};
 
 const int buttonMinus = 10;
 const int buttonMode = 9;
@@ -44,11 +44,21 @@ int statusButtonMinus;
 int statusButtonMode;
 int statusButtonPlus;
 
+int modeStatus = 0;
+int modeButtonPress = 0;
 
 // Define display mode
 const byte displayMode_Time = 1;
 const byte displayMode_Date = 2;
 const byte displayMode_Year = 3;
+const byte displayMode_Overrun = 4;     // Pseudo displayMode. Should always be one bigger than the last, normal displayMode
+
+const byte displayMode_SetHour = 129;
+const byte displayMode_SetMinute = 130;
+const byte displayMode_SetDay = 131;
+const byte displayMode_SetMonth = 132;
+const byte displayMode_SetYear = 133;
+
 
 // set the display mode
 int displayMode = displayMode_Time;
@@ -219,7 +229,7 @@ void loop()
       displayText[4] = 32;
       displayText[5] = 32;
       break;
-    default:
+    default:     // default should not happen, just here for precaution.
       break;
   }
 
@@ -240,5 +250,44 @@ void loop()
   statusButtonMinus = digitalRead (buttonMinus);
   statusButtonMode = digitalRead (buttonMode);
   statusButtonPlus = digitalRead (buttonPlus);
+
+  if (statusButtonMode == LOW)
+  {
+    digitalWrite(13, HIGH);
+    modeButtonPress++;
+    if (modeButtonPress >= 200)
+    {
+      displayMode = displayMode_SetHour;
+      
+      modeButtonPress = 0;
+    }
+  }
+  else
+  {
+    digitalWrite(13, LOW);
+    if (modeButtonPress >= 5)
+     {
+       displayMode++;
+       modeButtonPress = 0;
+     } 
+     else
+     {
+       if ((displayMode > 1) && (displayMode < 128))     // if we display something else than time
+       {
+         modeStatus++;
+         
+         if (modeStatus > 300)     // wait a few seconds before changing the displayMode
+         {
+           displayMode++;
+           modeStatus = 0;
+         }
+       }
+     }
+    if (displayMode == displayMode_Overrun)     // if we have moved beyond the last displayMode
+    {
+      displayMode = displayMode_Time;
+    }
+
+  }
 }
 
