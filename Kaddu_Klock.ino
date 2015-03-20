@@ -45,7 +45,9 @@ int statusButtonMode;
 int statusButtonPlus;
 
 int modeStatus = 0;
-int modeButtonPress = 0;
+int buttonMinusPress = 0;
+int buttonModePress = 0;
+int buttonPlusPress = 0;
 
 // Define display mode
 const byte displayMode_Time = 1;
@@ -344,24 +346,27 @@ void loop()
   statusButtonMode = digitalRead (buttonMode);
   statusButtonPlus = digitalRead (buttonPlus);
 
-  if (statusButtonMode == LOW)
+  if ((statusButtonMode == LOW) && ((statusButtonPlus == HIGH) || (statusButtonMinus == HIGH)))
   { 
     digitalWrite(13, HIGH);
-    modeButtonPress++;
-    if (modeButtonPress >= 200)
+    buttonModePress++;
+    buttonMinusPress = 0;
+    buttonPlusPress = 0;
+
+    if (buttonModePress >= 200)
     {
       displayMode = displayMode_SetHour;
       
-      modeButtonPress = 0;
+      buttonModePress = 0;
     }
   }
   else
   {
     digitalWrite(13, LOW);
-    if (modeButtonPress >= 10)
+    if (buttonModePress >= 10)
      {
        displayMode++;
-       modeButtonPress = 0;
+       buttonModePress = 0;
      } 
      else
      {
@@ -393,5 +398,28 @@ void loop()
       displayMode = displayMode_SetHour;
     }
   }
+
+  if ((statusButtonMinus == LOW) && ((statusButtonPlus == HIGH) || (statusButtonMode == HIGH)))
+  { 
+    digitalWrite(13, HIGH);
+    buttonMinusPress++;
+    if (buttonMinusPress >= 100)
+    {
+      
+      buttonMinusPress = 0;
+    }
+  }
+
+  if ((statusButtonPlus == LOW) && ((statusButtonMinus == HIGH) || (statusButtonMode == HIGH)))
+  { 
+    digitalWrite(13, HIGH);
+    buttonPlusPress++;
+    if (buttonPlusPress >= 100)
+    {
+      
+      buttonPlusPress = 0;
+    }
+  }
+
 }
 
