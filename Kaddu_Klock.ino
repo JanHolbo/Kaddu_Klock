@@ -253,7 +253,7 @@ void setup()
 }
 
 
-void loop()
+void formatDisplayText()
 {
   switch (displayMode) {
     case displayMode_Time:
@@ -323,9 +323,11 @@ void loop()
     default:     // default should not happen, just here for precaution.
       break;
   }
+}
 
-//  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
-//  Serial.println("displayText : " + String(displayText));
+void loop()
+{
+  formatDisplayText();
 
   switch (displayType) {
   case display_SevenSegment:
@@ -343,7 +345,7 @@ void loop()
   statusButtonPlus = digitalRead (buttonPlus);
 
   if (statusButtonMode == LOW)
-  {
+  { 
     digitalWrite(13, HIGH);
     modeButtonPress++;
     if (modeButtonPress >= 200)
@@ -390,7 +392,6 @@ void loop()
     {
       displayMode = displayMode_SetHour;
     }
-
   }
 }
 
