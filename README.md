@@ -3,9 +3,9 @@ Kaddu_Klock
 (c) 2014 by Jan Rasmussen & kaddu.dk
 Unless otherwise stated these files are licensed with the GPL v2 License
 
-Arduino based Window Farming automation system.
+Arduino based Time Keeping Piece.
 
-Web-page: http://www.kaddu.dk/index.php/en/projects/Kaddu_Klock
+Web-page: http://www.kaddu.dk/index.php/en/projects/54-kaddu-klock
 GitHub repository: https://github.com/JanHolbo/Kaddu_Klock
 
 This is an alpha version and a Work-in-Progress!
