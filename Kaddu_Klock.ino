@@ -213,12 +213,16 @@ void setup()
 void loop()
 {
   byte buttons = 0;
+/*
   if (!(digitalRead(buttonUp))) buttons+=4;
   if (!(digitalRead(buttonDown))) buttons+=8;
   if (!(digitalRead(buttonLeft))) buttons+=16;
   if (!(digitalRead(buttonRight))) buttons+=32;
   if (!(digitalRead(buttonA))) buttons+=64;
   if (!(digitalRead(buttonB))) buttons+=128;
+*/
+  
+  buttons = ~(PIND & 0b11111100);  // read all 6 input pins buttons are connected at once through the hardware register
   
   displayText[0] = (hour() / 10) + 48;
   displayText[1] = (hour() % 10) + 48;  
