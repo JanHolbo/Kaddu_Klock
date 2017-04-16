@@ -33,7 +33,7 @@ const char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
 
 //#define debug_serial
 
-// define display types
+// define display types - uncomment the line which reflects the connected display
 //#define display_SevenSegment
 //#define display_LEDMatrix
 //#define display_LCD
@@ -50,7 +50,7 @@ const int hc595_srclr = 7;
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 #endif
 
-
+// define the button digital pins
 const int buttonUp = 2;
 const int buttonDown = 3;
 const int buttonLeft = 4;
@@ -58,9 +58,9 @@ const int buttonRight = 5;
 const int buttonA = 6;
 const int buttonB = 7;
 
-char displayText[9] = "00:00:00";
+char displayText[9] = "00:00:00"; // Placeholder for displayed text
 
-int pos = 1;
+int pos = 1; // position marker (used when setting time or date)
 
 #ifdef display_SevenSegment
 // ****************************************
