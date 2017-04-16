@@ -32,16 +32,12 @@ U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
 
 // define display types
-const int display_SevenSegment = 1;
-const int display_LEDMatrix = 2;
-const int display_LCD = 4;
-const int display_OLED = 8;
+//#define display_SevenSegment
+//#define display_LEDMatrix
+//#define display_LCD
+#define display_OLED
 
-// set the display type
-//const int displayType = display_SevenSegment;
-const int displayType = display_OLED;
-
-/****************** Commented out for OLED version
+#ifdef display_LEDMatrix
 // define IO pins for LEDMatrix
 const int hc595_ser = 4;
 const int hc595_rclk = 5;
@@ -50,7 +46,8 @@ const int hc595_srclk = 6;
 const int hc595_srclr = 7;
 
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
-***************** Commented out for OLED version */
+#endif
+
 
 const int buttonUp = 2;
 const int buttonDown = 3;
@@ -63,7 +60,7 @@ char displayText[9] = "00:00:00";
 
 int pos = 1;
 
-/****************** Commented out for OLED version
+#ifdef display_SevenSegment
 // ****************************************
 //            Seven Segment Code
 // ****************************************
@@ -107,8 +104,9 @@ const byte patterns[] = {
 
   }
 }
+#endif
 
-
+#ifdef display_LEDMatrix
 // ****************************************
 //                LED Matrix Code
 // ****************************************
@@ -167,8 +165,7 @@ void showDisplayLEDMatrix()
 
   }
 }
-  ********* Commented out for OLED code  */
-
+#endif
   
 // ****************************************
 //                Common Code
@@ -202,27 +199,30 @@ void setup()
   }
   ****************** Commented out for OLED code */
   
-  pinMode (buttonLeft, INPUT_PULLUP);
-  pinMode (buttonRight, INPUT_PULLUP);
-  pinMode (buttonUp, INPUT_PULLUP);
-  pinMode (buttonDown, INPUT_PULLUP);
-  pinMode (buttonA, INPUT_PULLUP);
-  pinMode (buttonB, INPUT_PULLUP);
+//  pinMode (buttonLeft, INPUT_PULLUP);
+//  pinMode (buttonRight, INPUT_PULLUP);
+//  pinMode (buttonUp, INPUT_PULLUP);
+//  pinMode (buttonDown, INPUT_PULLUP);
+//  pinMode (buttonA, INPUT_PULLUP);
+//  pinMode (buttonB, INPUT_PULLUP);
+  DDRD = DDRD & B00000011; // Set pins 7-2 to INPUT - leave pins 1 & 0 unchanged (serial pins)
+  PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
 
 void loop()
 {
   byte buttons = 0;
-/*
-  if (!(digitalRead(buttonUp))) buttons+=4;
-  if (!(digitalRead(buttonDown))) buttons+=8;
-  if (!(digitalRead(buttonLeft))) buttons+=16;
-  if (!(digitalRead(buttonRight))) buttons+=32;
-  if (!(digitalRead(buttonA))) buttons+=64;
-  if (!(digitalRead(buttonB))) buttons+=128;
-*/
+
+  buttons = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
+
+//  if (!(digitalRead(buttonUp))) buttons+=4;
+//  if (!(digitalRead(buttonDown))) buttons+=8;
+//  if (!(digitalRead(buttonLeft))) buttons+=16;
+//  if (!(digitalRead(buttonRight))) buttons+=32;
+//  if (!(digitalRead(buttonA))) buttons+=64;
+//  if (!(digitalRead(buttonB))) buttons+=128;
+
   
-  buttons = ~(PIND & 0b11111100);  // read all 6 input pins buttons are connected at once through the hardware register
   
   displayText[0] = (hour() / 10) + 48;
   displayText[1] = (hour() % 10) + 48;  
@@ -236,19 +236,7 @@ void loop()
   if (buttons & (4))  // buttonUp
   {
 // subtract seconds depending on position
-    if (pos == 0) adjustTime(-5*60*60);
-    if (pos == 0) adjustTime(-5*60*60);
-    if (pos == 1) adjustTime(-1*60*60);
-    if (pos == 3) adjustTime(-10*60);
-    if (pos == 4) adjustTime(-1*60);
-    if (pos == 6) adjustTime(-10);
-    if (pos == 7) adjustTime(-1);
-  }
-
-  if (buttons & (8))  // buttonDown
-  {
-// subtract seconds depending on position
-    if (pos == 0) adjustTime(5*60*60);
+//    if (pos == 0) adjustTime(5*60*60);
     if (pos == 0) adjustTime(5*60*60);
     if (pos == 1) adjustTime(1*60*60);
     if (pos == 3) adjustTime(10*60);
@@ -257,6 +245,19 @@ void loop()
     if (pos == 7) adjustTime(1);
   }
 
+  if (buttons & (8))  // buttonDown
+  {
+// subtract seconds depending on position
+//    if (pos == 0) adjustTime(-5*60*60);
+//    if (pos == 0) adjustTime(-5*60*60);
+    if (pos == 1) adjustTime(-1*60*60);
+    if (pos == 3) adjustTime(-10*60);
+    if (pos == 4) adjustTime(-1*60);
+    if (pos == 6) adjustTime(-10);
+    if (pos == 7) adjustTime(-1);
+  }
+
+//  Serial.println("buttonLeft : " + String (buttons & (16)));
   if (buttons & (16))  // buttonLeft
   {
     pos--;
@@ -265,6 +266,7 @@ void loop()
     if (pos < 1) pos = 7;
   }
 
+//  Serial.println("buttonRight : " + String (buttons & (32)));
   if (buttons & (32))  // buttonRight
   {
     pos++;
