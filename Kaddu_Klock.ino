@@ -29,7 +29,9 @@
 
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
   
-char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
+const char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
+
+//#define debug_serial
 
 // define display types
 //#define display_SevenSegment
@@ -65,7 +67,6 @@ int pos = 1;
 //            Seven Segment Code
 // ****************************************
 
-
 void showDisplay7Seg()
 {
 const byte patterns[] = {
@@ -73,7 +74,6 @@ const byte patterns[] = {
   B01001111, B01100110, B01101101,
   B01111101, B00000111, B01111111,
   B01101111};
-
 
   for (int x = 0; x < 6; x++) {
     digitalWrite (multiplex[x], HIGH);
@@ -101,7 +101,6 @@ const byte patterns[] = {
 
     digitalWrite (hc595_rclk, LOW);
     digitalWrite (hc595_rclk, HIGH);
-
   }
 }
 #endif
@@ -124,12 +123,9 @@ void showDisplayLEDMatrix()
                                                       04, 10, 10, 04, 10, 10, 04, 00,
                                                       04, 10, 10, 06, 02, 10, 04, 00};
   
-  
   byte pattern;
-  
 
   for (byte row = 0; row < 8; row++) {
-
     digitalWrite (hc595_rclk, LOW);
     digitalWrite (hc595_rclk, HIGH);
 
@@ -154,7 +150,6 @@ void showDisplayLEDMatrix()
     pattern = 1 << row; // row select
     shiftOut (hc595_ser, hc595_srclk, MSBFIRST, pattern);
 
-
     digitalWrite (hc595_rclk, HIGH);
 
     delayMicroseconds (1000);
@@ -162,7 +157,6 @@ void showDisplayLEDMatrix()
 
     digitalWrite (hc595_rclk, LOW);
     digitalWrite (hc595_rclk, HIGH);
-
   }
 }
 #endif
@@ -174,8 +168,10 @@ void showDisplayLEDMatrix()
 
 void setup()
 {
-//  Serial.begin(9600);                                                 // open serial connection
-//  Serial.println(versionHeader);
+#ifdef debug_serial
+  Serial.begin(9600);                                                 // open serial connection
+  Serial.println(versionHeader);
+#endif
   
   u8g2.begin();
   u8g2.setFontRefHeightExtendedText();
@@ -185,7 +181,7 @@ void setup()
 
   setTime(12, 0, 0, 1, 1, 2015);
 
-/***********  Commented out for OLED code  
+#ifdef display_LEDMatrix
 // Setup digital pins for 74hc595
   pinMode (hc595_ser, OUTPUT);
   pinMode (hc595_rclk, OUTPUT);
@@ -197,14 +193,14 @@ void setup()
     pinMode (multiplex[x], OUTPUT);
     digitalWrite (multiplex[x], HIGH);
   }
-  ****************** Commented out for OLED code */
+#endif
   
-//  pinMode (buttonLeft, INPUT_PULLUP);
-//  pinMode (buttonRight, INPUT_PULLUP);
-//  pinMode (buttonUp, INPUT_PULLUP);
-//  pinMode (buttonDown, INPUT_PULLUP);
-//  pinMode (buttonA, INPUT_PULLUP);
-//  pinMode (buttonB, INPUT_PULLUP);
+//  pinMode (buttonLeft, INPUT_PULLUP);   // Set internal pullup resistor
+//  pinMode (buttonRight, INPUT_PULLUP);  // Set internal pullup resistor
+//  pinMode (buttonUp, INPUT_PULLUP);     // Set internal pullup resistor
+//  pinMode (buttonDown, INPUT_PULLUP);   // Set internal pullup resistor
+//  pinMode (buttonA, INPUT_PULLUP);      // Set internal pullup resistor
+//  pinMode (buttonB, INPUT_PULLUP);      // Set internal pullup resistor
   DDRD = DDRD & B00000011; // Set pins 7-2 to INPUT - leave pins 1 & 0 unchanged (serial pins)
   PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
@@ -222,8 +218,6 @@ void loop()
 //  if (!(digitalRead(buttonA))) buttons+=64;
 //  if (!(digitalRead(buttonB))) buttons+=128;
 
-  
-  
   displayText[0] = (hour() / 10) + 48;
   displayText[1] = (hour() % 10) + 48;  
   displayText[3] = (minute() / 10) + 48;
@@ -231,13 +225,15 @@ void loop()
   displayText[6] = (second() / 10) + 48;
   displayText[7] = (second() % 10) + 48;  
 
-//  Serial.println(buttons); // show buttons pressed
+#ifdef debug_serial
+  Serial.println(buttons); // show buttons pressed
+#endif
 
-  if (buttons & (4))  // buttonUp
+  if (buttons & (1>>buttonUp))  // buttonUp
   {
 // subtract seconds depending on position
 //    if (pos == 0) adjustTime(5*60*60);
-    if (pos == 0) adjustTime(5*60*60);
+//    if (pos == 0) adjustTime(5*60*60);
     if (pos == 1) adjustTime(1*60*60);
     if (pos == 3) adjustTime(10*60);
     if (pos == 4) adjustTime(1*60);
@@ -245,7 +241,7 @@ void loop()
     if (pos == 7) adjustTime(1);
   }
 
-  if (buttons & (8))  // buttonDown
+  if (buttons & (1>>buttonDown))  // buttonDown
   {
 // subtract seconds depending on position
 //    if (pos == 0) adjustTime(-5*60*60);
@@ -257,8 +253,11 @@ void loop()
     if (pos == 7) adjustTime(-1);
   }
 
-//  Serial.println("buttonLeft : " + String (buttons & (16)));
-  if (buttons & (16))  // buttonLeft
+#ifdef debug_serial
+  Serial.println("buttonLeft : " + String (buttons & (16)));
+#endif
+
+  if (buttons & (1>>buttonLeft))  // buttonLeft
   {
     pos--;
     if (pos == 2) pos--;
@@ -267,7 +266,7 @@ void loop()
   }
 
 //  Serial.println("buttonRight : " + String (buttons & (32)));
-  if (buttons & (32))  // buttonRight
+  if (buttons & (1>>buttonRight))  // buttonRight
   {
     pos++;
     if (pos == 2) pos++;
@@ -275,22 +274,31 @@ void loop()
     if (pos > 7) pos = 1;
   }
 
-  if (buttons & (64))  // buttonA
+  if (buttons & (1>>buttonA))  // buttonA
   {
   }
 
-  if (buttons & (128))  // buttonB
+  if (buttons & (1>>buttonB))  // buttonB
   {
   }
 
-//  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
-//  Serial.println("displayText : " + String(displayText));
+#ifdef debug_serial
+  Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
+  Serial.println("displayText : " + String(displayText));
+#endif
 
-//    showDisplay7Seg();
-//    showDisplayLEDMatrix();
+#ifdef display_SevenSegment
+    showDisplay7Seg();
+#endif
+
+#ifdef display_LEDMatrix
+    showDisplayLEDMatrix();
+#endif
+
 /* 
  * OLED Code 
  */
+#ifdef display_OLED
   u8g2.firstPage();
   do {
     u8g2.drawFrame(0, 0, 127, 63);
@@ -299,9 +307,7 @@ void loop()
     u8g2.drawTriangle (5+(pos*14), 18, 16+(pos*14), 18, 11+(pos*14), 10);
     u8g2.drawTriangle (5+(pos*14), 40, 16+(pos*14), 40, 11+(pos*14), 48);
   } while ( u8g2.nextPage() );
-
+#endif
 //  delay (100);
 }
-
-
 
