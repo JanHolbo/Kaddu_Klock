@@ -1,11 +1,11 @@
 Kaddu_Klock
 ===========
-(c) 2014 by Jan Rasmussen & kaddu.dk
+(c) 2014-2017 by Jan Rasmussen & kaddu.dk
 Unless otherwise stated these files are licensed with the GPL v2 License
 
 Arduino based Time Keeping Piece.
 
-Web-page: http://www.kaddu.dk/index.php/en/projects/54-kaddu-klock
+Web-page: http://www.kaddu.dk/arduino/projects/kaddu-klock.html
 GitHub repository: https://github.com/JanHolbo/Kaddu_Klock
 
 This is an alpha version and a Work-in-Progress!
