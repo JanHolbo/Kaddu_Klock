@@ -11,6 +11,11 @@ GitHub repository: https://github.com/JanHolbo/Kaddu_Klock
 This is an alpha version and a Work-in-Progress!
 Use it at your own risk!
 
+Branches:
+master                    release (stable) branch
+develop                   current development (unstable) branch
+feature-xxx               specific feature (testing) branch
+
 Directories:
 Kaddu_Klock/              Main directory
 Kaddu_Klock/docs          Documentation
