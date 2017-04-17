@@ -44,7 +44,6 @@ const char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
 const int hc595_ser = 4;
 const int hc595_rclk = 5;
 const int hc595_srclk = 6;
-//const int hc595_oe = 6;
 const int hc595_srclr = 7;
 
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
@@ -151,7 +150,6 @@ void showDisplayLEDMatrix()
     digitalWrite (hc595_rclk, HIGH);
 
     delayMicroseconds (1000);
-//    delay (1000);
 
     digitalWrite (hc595_rclk, LOW);
     digitalWrite (hc595_rclk, HIGH);
@@ -182,7 +180,6 @@ void setup()
   pinMode (hc595_ser, OUTPUT);
   pinMode (hc595_rclk, OUTPUT);
   pinMode (hc595_srclk, OUTPUT);
-  //  pinMode (hc595_oe, OUTPUT);
   pinMode (hc595_srclr, OUTPUT);
 
   for (int x = 0; x < 7; x++) {
@@ -191,12 +188,6 @@ void setup()
   }
 #endif
   
-//  pinMode (buttonLeft, INPUT_PULLUP);   // Set internal pullup resistor
-//  pinMode (buttonRight, INPUT_PULLUP);  // Set internal pullup resistor
-//  pinMode (buttonUp, INPUT_PULLUP);     // Set internal pullup resistor
-//  pinMode (buttonDown, INPUT_PULLUP);   // Set internal pullup resistor
-//  pinMode (buttonA, INPUT_PULLUP);      // Set internal pullup resistor
-//  pinMode (buttonB, INPUT_PULLUP);      // Set internal pullup resistor
   DDRD = DDRD & B00000011; // Set pins 7-2 to INPUT - leave pins 1 & 0 unchanged (serial pins)
   PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
@@ -206,13 +197,6 @@ void loop()
   byte buttons = 0;
 
   buttons = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
-
-//  if (!(digitalRead(buttonUp))) buttons+=4;
-//  if (!(digitalRead(buttonDown))) buttons+=8;
-//  if (!(digitalRead(buttonLeft))) buttons+=16;
-//  if (!(digitalRead(buttonRight))) buttons+=32;
-//  if (!(digitalRead(buttonA))) buttons+=64;
-//  if (!(digitalRead(buttonB))) buttons+=128;
 
   displayText[0] = (hour() / 10) + 48;
   displayText[1] = (hour() % 10) + 48;  
@@ -227,15 +211,6 @@ void loop()
 
   if (buttons & (1>>buttonUp))  // buttonUp
   {
-// subtract seconds depending on position
-//    if (pos == 0) adjustTime(5*60*60);
-//    if (pos == 0) adjustTime(5*60*60);
-//    if (pos == 1) adjustTime(1*60*60);
-//    if (pos == 3) adjustTime(10*60);
-//    if (pos == 4) adjustTime(1*60);
-//    if (pos == 6) adjustTime(10);
-//    if (pos == 7) adjustTime(1);
-
     switch (pos) {
       case 1:
         adjustTime(1*60*60);
@@ -257,14 +232,6 @@ void loop()
 
   if (buttons & (1>>buttonDown))  // buttonDown
   {
-// subtract seconds depending on position
-//    if (pos == 0) adjustTime(-5*60*60);
-//    if (pos == 0) adjustTime(-5*60*60);
-//    if (pos == 1) adjustTime(-1*60*60);
-//    if (pos == 3) adjustTime(-10*60);
-//    if (pos == 4) adjustTime(-1*60);
-//    if (pos == 6) adjustTime(-10);
-//    if (pos == 7) adjustTime(-1);
     switch (pos) {
       case 1:
         adjustTime(-1*60*60);
@@ -291,9 +258,6 @@ void loop()
   if (buttons & (1>>buttonLeft))  // buttonLeft
   {
     pos--;
-//    if (pos == 2) pos--;
-//    if (pos == 5) pos--;
-//    if (pos < 1) pos = 7;
     switch (pos) {
       case 0:
         pos = 7;
@@ -309,9 +273,6 @@ void loop()
   if (buttons & (1>>buttonRight))  // buttonRight
   {
     pos++;
-//    if (pos == 2) pos++;
-//    if (pos == 5) pos++;
-//    if (pos > 7) pos = 1;
     switch (pos) {
       case 2:
       case 5:
