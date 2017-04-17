@@ -33,7 +33,7 @@ const char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
 
 //#define debug_serial
 
-// define display types
+// define display types - uncomment the line which reflects the connected display
 //#define display_SevenSegment
 //#define display_LEDMatrix
 //#define display_LCD
@@ -50,7 +50,7 @@ const int hc595_srclr = 7;
 const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 #endif
 
-
+// define the button digital pins
 const int buttonUp = 2;
 const int buttonDown = 3;
 const int buttonLeft = 4;
@@ -58,15 +58,14 @@ const int buttonRight = 5;
 const int buttonA = 6;
 const int buttonB = 7;
 
-char displayText[9] = "00:00:00";
+char displayText[9] = "00:00:00"; // Placeholder for displayed text
 
-int pos = 1;
+int pos = 1; // position marker (used when setting time or date)
 
 #ifdef display_SevenSegment
 // ****************************************
 //            Seven Segment Code
 // ****************************************
-
 void showDisplay7Seg()
 {
 const byte patterns[] = {
@@ -109,19 +108,18 @@ const byte patterns[] = {
 // ****************************************
 //                LED Matrix Code
 // ****************************************
-
 void showDisplayLEDMatrix()
 {
   byte const patterns [10][8] = {04, 10, 10, 10, 10, 10, 04, 00,
-                                                      04, 12, 04, 04, 04, 04, 14, 00,
-                                                      04, 10, 02, 02, 04,  8, 14, 00,
-                                                      04, 10, 02, 04, 02, 10, 04, 00,
-                                                      10, 10, 10, 14, 02, 02, 02, 00,
-                                                      14,  8,  8, 04, 02, 10, 04, 00,
-                                                      04, 10,  8, 12, 10, 10, 04, 00,
-                                                      14, 10, 02, 02, 02, 02, 02, 00,
-                                                      04, 10, 10, 04, 10, 10, 04, 00,
-                                                      04, 10, 10, 06, 02, 10, 04, 00};
+                                 04, 12, 04, 04, 04, 04, 14, 00,
+                                 04, 10, 02, 02, 04,  8, 14, 00,
+                                 04, 10, 02, 04, 02, 10, 04, 00,
+                                 10, 10, 10, 14, 02, 02, 02, 00,
+                                 14,  8,  8, 04, 02, 10, 04, 00,
+                                 04, 10,  8, 12, 10, 10, 04, 00,
+                                 14, 10, 02, 02, 02, 02, 02, 00,
+                                 04, 10, 10, 04, 10, 10, 04, 00,
+                                 04, 10, 10, 06, 02, 10, 04, 00};
   
   byte pattern;
 
@@ -164,8 +162,6 @@ void showDisplayLEDMatrix()
 // ****************************************
 //                Common Code
 // ****************************************
-
-
 void setup()
 {
 #ifdef debug_serial
@@ -234,11 +230,29 @@ void loop()
 // subtract seconds depending on position
 //    if (pos == 0) adjustTime(5*60*60);
 //    if (pos == 0) adjustTime(5*60*60);
-    if (pos == 1) adjustTime(1*60*60);
-    if (pos == 3) adjustTime(10*60);
-    if (pos == 4) adjustTime(1*60);
-    if (pos == 6) adjustTime(10);
-    if (pos == 7) adjustTime(1);
+//    if (pos == 1) adjustTime(1*60*60);
+//    if (pos == 3) adjustTime(10*60);
+//    if (pos == 4) adjustTime(1*60);
+//    if (pos == 6) adjustTime(10);
+//    if (pos == 7) adjustTime(1);
+
+    switch (pos) {
+      case 1:
+        adjustTime(1*60*60);
+        break;
+      case 3:
+        adjustTime(10*60);
+        break;
+      case 4:
+        adjustTime(1*60);
+        break;
+      case 6:
+        adjustTime(10);
+        break;
+      case 7:
+        adjustTime(1);
+        break;
+    }
   }
 
   if (buttons & (1>>buttonDown))  // buttonDown
@@ -246,11 +260,28 @@ void loop()
 // subtract seconds depending on position
 //    if (pos == 0) adjustTime(-5*60*60);
 //    if (pos == 0) adjustTime(-5*60*60);
-    if (pos == 1) adjustTime(-1*60*60);
-    if (pos == 3) adjustTime(-10*60);
-    if (pos == 4) adjustTime(-1*60);
-    if (pos == 6) adjustTime(-10);
-    if (pos == 7) adjustTime(-1);
+//    if (pos == 1) adjustTime(-1*60*60);
+//    if (pos == 3) adjustTime(-10*60);
+//    if (pos == 4) adjustTime(-1*60);
+//    if (pos == 6) adjustTime(-10);
+//    if (pos == 7) adjustTime(-1);
+    switch (pos) {
+      case 1:
+        adjustTime(-1*60*60);
+        break;
+      case 3:
+        adjustTime(-10*60);
+        break;
+      case 4:
+        adjustTime(-1*60);
+        break;
+      case 6:
+        adjustTime(-10);
+        break;
+      case 7:
+        adjustTime(-1);
+        break;
+    }
   }
 
 #ifdef debug_serial
@@ -260,18 +291,36 @@ void loop()
   if (buttons & (1>>buttonLeft))  // buttonLeft
   {
     pos--;
-    if (pos == 2) pos--;
-    if (pos == 5) pos--;
-    if (pos < 1) pos = 7;
+//    if (pos == 2) pos--;
+//    if (pos == 5) pos--;
+//    if (pos < 1) pos = 7;
+    switch (pos) {
+      case 0:
+        pos = 7;
+        break;
+      case 2:
+      case 5:
+        pos--;
+        break;
+    }
   }
 
 //  Serial.println("buttonRight : " + String (buttons & (32)));
   if (buttons & (1>>buttonRight))  // buttonRight
   {
     pos++;
-    if (pos == 2) pos++;
-    if (pos == 5) pos++;
-    if (pos > 7) pos = 1;
+//    if (pos == 2) pos++;
+//    if (pos == 5) pos++;
+//    if (pos > 7) pos = 1;
+    switch (pos) {
+      case 2:
+      case 5:
+        pos++;
+        break;
+      case 8:
+        pos = 1;
+        break;
+    }
   }
 
   if (buttons & (1>>buttonA))  // buttonA
