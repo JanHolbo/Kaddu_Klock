@@ -56,8 +56,9 @@ const int buttonLeft = 4;
 const int buttonRight = 5;
 const int buttonA = 6;
 const int buttonB = 7;
+byte buttons = 0;
 
-char displayText[9] = "00:00:00"; // Placeholder for displayed text
+char displayText[] = "1234567890"; // Placeholder for displayed text
 
 int pos = 1; // position marker (used when setting time or date)
 
@@ -192,23 +193,14 @@ void setup()
   PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
 
-void loop()
+void handleButtons()
 {
-  byte buttons = 0;
-
   buttons = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
+  
+}
 
-  displayText[0] = (hour() / 10) + 48;
-  displayText[1] = (hour() % 10) + 48;  
-  displayText[3] = (minute() / 10) + 48;
-  displayText[4] = (minute() % 10) + 48;  
-  displayText[6] = (second() / 10) + 48;
-  displayText[7] = (second() % 10) + 48;  
-
-#ifdef debug_serial
-  Serial.println(buttons); // show buttons pressed
-#endif
-
+void settingTime()
+{
   if (buttons & (1>>buttonUp))  // buttonUp
   {
     switch (pos) {
@@ -291,6 +283,28 @@ void loop()
   if (buttons & (1>>buttonB))  // buttonB
   {
   }
+  
+#ifdef display_OLED
+  u8g2.firstPage();
+  do {
+    u8g2.drawFrame(0, 0, 127, 63);
+    u8g2.setFont(u8g2_font_inb16_mf);
+    u8g2.drawStr( 5, 20, displayText);
+    u8g2.drawTriangle (5+(pos*14), 18, 16+(pos*14), 18, 11+(pos*14), 10);
+    u8g2.drawTriangle (5+(pos*14), 40, 16+(pos*14), 40, 11+(pos*14), 48);
+  } while ( u8g2.nextPage() );
+#endif
+//  delay (100);
+}
+
+void loop()
+{
+  handleButtons();
+  
+#ifdef debug_serial
+  Serial.println(buttons); // show buttons pressed
+#endif
+
 
 #ifdef debug_serial
   Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
@@ -311,11 +325,30 @@ void loop()
 #ifdef display_OLED
   u8g2.firstPage();
   do {
-    u8g2.drawFrame(0, 0, 127, 63);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr( 5, 20, displayText);
-    u8g2.drawTriangle (5+(pos*14), 18, 16+(pos*14), 18, 11+(pos*14), 10);
-    u8g2.drawTriangle (5+(pos*14), 40, 16+(pos*14), 40, 11+(pos*14), 48);
+    u8g2.drawRFrame(0, 0, 127, 63, 3);
+    u8g2.setFont(u8g2_font_inr16_mf);
+    displayText[0] = (hour() / 10) + 48;
+    displayText[1] = (hour() % 10) + 48;  
+    displayText[2] = ':';
+    displayText[3] = (minute() / 10) + 48;
+    displayText[4] = (minute() % 10) + 48;  
+    displayText[5] = ':';
+    displayText[6] = (second() / 10) + 48;
+    displayText[7] = (second() % 10) + 48;  
+    u8g2.drawStr( 5, 30, displayText);
+
+    displayText[0] = (day() / 10) + 48;
+    displayText[1] = (day() % 10) + 48;  
+    displayText[2] = '/';
+    displayText[3] = (month() / 10) + 48;
+    displayText[4] = (month() % 10) + 48;  
+    displayText[5] = '-';
+    displayText[6] = (year() / 1000) + 48;
+    displayText[7] = ((year() / 100) % 10) + 48;  
+    displayText[8] = ((year() / 10) % 10) + 48;  
+    displayText[9] = (year() % 10) + 48;  
+    u8g2.setFont(u8g2_font_crox3cb_mf);
+    u8g2.drawStr( 5, 10, displayText);
   } while ( u8g2.nextPage() );
 #endif
 //  delay (100);
