@@ -50,13 +50,53 @@ const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 #endif
 
 // define the button digital pins
-const int buttonUp = 2;
-const int buttonDown = 3;
-const int buttonLeft = 4;
-const int buttonRight = 5;
-const int buttonA = 6;
-const int buttonB = 7;
-byte buttons = 0;
+class buttons {
+  public:
+  const int buttonUp = 2;
+  const int buttonDown = 3;
+  const int buttonLeft = 4;
+  const int buttonRight = 5;
+  const int buttonA = 6;
+  const int buttonB = 7;
+
+  byte status = 0;
+  
+  buttons() {
+    status = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
+  }
+
+  void update() {
+    byte oldStatus=status;
+
+    status = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
+  }
+
+  bool up() {
+    return (false);
+  }
+
+  bool down() {
+    return (false);
+  }
+
+  bool left() {
+    return (false);
+  }
+
+  bool right() {
+    return (false);
+  }
+
+  bool a() {
+    return (false);
+  }
+
+  bool b() {
+    return (false);
+  }
+};
+
+buttons pushButtons = buttons();
 
 char displayText[] = "1234567890"; // Placeholder for displayed text
 
@@ -193,15 +233,18 @@ void setup()
   PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
 
+/*
 void handleButtons()
 {
+  byte oldbuttons = buttons;
+  
   buttons = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
   
 }
-
+*/
 void settingTime()
 {
-  if (buttons & (1>>buttonUp))  // buttonUp
+  if (pushButtons.up())  // buttonUp
   {
     switch (pos) {
       case 1:
@@ -222,7 +265,7 @@ void settingTime()
     }
   }
 
-  if (buttons & (1>>buttonDown))  // buttonDown
+  if (pushButtons.down())  // buttonDown
   {
     switch (pos) {
       case 1:
@@ -247,7 +290,7 @@ void settingTime()
   Serial.println("buttonLeft : " + String (buttons & (16)));
 #endif
 
-  if (buttons & (1>>buttonLeft))  // buttonLeft
+  if (pushButtons.left())  // buttonLeft
   {
     pos--;
     switch (pos) {
@@ -262,7 +305,7 @@ void settingTime()
   }
 
 //  Serial.println("buttonRight : " + String (buttons & (32)));
-  if (buttons & (1>>buttonRight))  // buttonRight
+  if (pushButtons.right())  // buttonRight
   {
     pos++;
     switch (pos) {
@@ -276,11 +319,11 @@ void settingTime()
     }
   }
 
-  if (buttons & (1>>buttonA))  // buttonA
+  if (pushButtons.a())  // buttonA
   {
   }
 
-  if (buttons & (1>>buttonB))  // buttonB
+  if (pushButtons.b())  // buttonB
   {
   }
   
@@ -299,7 +342,7 @@ void settingTime()
 
 void loop()
 {
-  handleButtons();
+//  handleButtons();
   
 #ifdef debug_serial
   Serial.println(buttons); // show buttons pressed
