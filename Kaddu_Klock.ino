@@ -15,10 +15,19 @@
  *
  */
 
+//#define debug_serial
+
+// define display types - uncomment the line which reflects the connected display
+//#define display_SevenSegment
+//#define display_LEDMatrix
+//#define display_LCD
+#define display_OLED
+
 // Use the Time Library (http://www.pjrc.com/teensy/td_libs_Time.html)
 #include <Time.h>
 #include <TimeLib.h>
 
+#ifdef display_OLED
 // Use the u8g2 lib for display on OLED
 #include <U8g2lib.h>
 #include <U8x8lib.h>
@@ -28,16 +37,9 @@
 #endif
 
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-  
+#endif
+
 const char versionHeader[] = "!Kaddu Klock v0.1-alpha oled";
-
-//#define debug_serial
-
-// define display types - uncomment the line which reflects the connected display
-//#define display_SevenSegment
-//#define display_LEDMatrix
-//#define display_LCD
-#define display_OLED
 
 #ifdef display_LEDMatrix
 // define IO pins for LEDMatrix
@@ -69,29 +71,38 @@ class buttons {
     byte oldStatus=status;
 
     status = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
+
+    // do an oldStatus XOR status to see if anything has changed 
+  
   }
 
   bool up() {
+    if (status && 1>>buttonUp) return (true);
     return (false);
   }
 
   bool down() {
+    if (status && 1>>buttonDown) return (true);
     return (false);
   }
 
   bool left() {
+    if (status && 1>>buttonLeft) return (true);
     return (false);
   }
 
   bool right() {
+    if (status && 1>>buttonRight) return (true);
     return (false);
   }
 
   bool a() {
+    if (status && 1>>buttonA) return (true);
     return (false);
   }
 
   bool b() {
+    if (status && 1>>buttonB) return (true);
     return (false);
   }
 };
@@ -233,15 +244,6 @@ void setup()
   PORTD = (PORTD & B00000011) | B11111100; // Set pins 7-2 HIGH (turn on internal pull-up resistor)
 }
 
-/*
-void handleButtons()
-{
-  byte oldbuttons = buttons;
-  
-  buttons = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
-  
-}
-*/
 void settingTime()
 {
   if (pushButtons.up())  // buttonUp
