@@ -336,7 +336,7 @@ void loop()
     displayText[6] = (second() / 10) + 48;
     displayText[7] = (second() % 10) + 48;  
     displayText[8] = 0;
-    u8g2.drawStr( 5, 30, displayText);
+    u8g2.drawStr(12, 30, displayText);
 
     displayText[0] = (day() / 10) + 48;
     displayText[1] = (day() % 10) + 48;  
@@ -349,8 +349,8 @@ void loop()
     displayText[8] = ((year() / 10) % 10) + 48;  
     displayText[9] = (year() % 10) + 48;  
     displayText[10] = 0;
-    u8g2.setFont(u8g2_font_crox3cb_mf);
-    u8g2.drawStr( 5, 10, displayText);
+    u8g2.setFont(u8g2_font_7x14B_mf);
+    u8g2.drawStr(29, 10, displayText);
   } while ( u8g2.nextPage() );
 #endif
 //  delay (100);
