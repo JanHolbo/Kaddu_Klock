@@ -54,13 +54,14 @@ const int multiplex[] = {6, 7, 8, 9, 10, 11, 12, 13};
 // define the button digital pins
 class buttons {
   public:
-  const int buttonUp = 2;
-  const int buttonDown = 3;
-  const int buttonLeft = 4;
-  const int buttonRight = 5;
-  const int buttonA = 6;
-  const int buttonB = 7;
-
+  const int buttonUp = 2;       // datapin no the button is connected to
+  const int buttonDown = 3;     // datapin no the button is connected to
+  const int buttonLeft = 4;     // datapin no the button is connected to
+  const int buttonRight = 5;    // datapin no the button is connected to
+  const int buttonA = 6;        // datapin no the button is connected to
+  const int buttonB = 7;        // datapin no the button is connected to
+  unsigned int timeSincePressed[6] = {0, 0, 0, 0, 0, 0};     // milliseconds since the key was pressed. 0 if the key is depressed
+  
   byte status = 0;
   
   buttons() {
@@ -73,7 +74,14 @@ class buttons {
     status = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
 
     // do an oldStatus XOR status to see if anything has changed 
-  
+    if (oldStatus^status)
+    {
+      for (int x=2;x<8;x++)        // cycle through the bits of the button status byte. Should not be hardcoded like this :-/
+      {
+        if ((status && 1>>x) && !(oldStatus && 1>>x)) 
+          timeSincePressed [x-2] = millis();
+      }
+    }
   }
 
   bool up() {
@@ -215,7 +223,7 @@ void showDisplayLEDMatrix()
 void setup()
 {
 #ifdef debug_serial
-  Serial.begin(9600);                                                 // open serial connection
+  Serial.begin(9600);                   // open serial connection
   Serial.println(versionHeader);
 #endif
   
