@@ -60,7 +60,7 @@ class buttons {
   const int buttonRight = 5;    // datapin no the button is connected to
   const int buttonA = 6;        // datapin no the button is connected to
   const int buttonB = 7;        // datapin no the button is connected to
-  unsigned int timeSincePressed[6] = {0, 0, 0, 0, 0, 0};     // milliseconds since the key was pressed. 0 if the key is depressed
+  unsigned long timeSincePressed[6] = {0, 0, 0, 0, 0, 0};     // milliseconds since the key was pressed. 0 if the key is depressed
   
   byte status = 0;
   
@@ -79,10 +79,33 @@ class buttons {
     // do an oldStatus XOR status to see if anything has changed 
     if (oldStatus^status)
     {
-      for (int x=2;x<8;x++)        // cycle through the bits of the button status byte. Should not be hardcoded like this :-/
+#ifdef debug_serial
+  Serial.println("button state changed - oldStatus : " + String (oldStatus) + " status : " + String (status) + " XOR : " + String(oldStatus^status));
+#endif
+      byte bitmask = 2;
+      for (int x = 2; x < 8; x++)        // cycle through the bits of the button status byte. Should not be hardcoded like this :-/
       {
-        if ((status && 1>>x) && !(oldStatus && 1>>x)) 
-          timeSincePressed [x-2] = millis();
+        bitmask = bitmask<<1;
+#ifdef debug_serial
+  Serial.println("button status : " + String (status) + " bitmask : " + String (bitmask) + " status & bitmask : " + String(status & bitmask));
+  Serial.println("button oldStatus : " + String (oldStatus) + " bitmask : " + String (bitmask) + " !oldStatus & bitmask : " + String(!oldStatus & bitmask));
+#endif
+        if (status & bitmask) {
+          if ((oldStatus ^ status) & bitmask) {
+            timeSincePressed[x-2] = millis();
+          }
+        }
+
+        if (!oldStatus & bitmask) {
+          if ((oldStatus ^ status) & bitmask) {
+            timeSincePressed[x-2] = 0;
+          }
+        }
+        
+#ifdef debug_serial
+  Serial.println("button timeSincePressed[" + String (x-2) + "] contains " + String (timeSincePressed[x-2]));
+#endif
+
       }
     }
   }
@@ -118,7 +141,13 @@ class buttons {
   }
 
   bool longPressA() {
-    if ((timeSincePressed[4] > 0) && (millis() - timeSincePressed[4]) >= 500) return (true);
+    if (timeSincePressed[buttonA-2] > 0) {
+      if ((millis() - timeSincePressed[buttonA-2]) >= 500) {
+        return (true);
+      }
+    }
+        
+    return (false);
   }
   
 };
@@ -345,18 +374,6 @@ void settingTime()
   if (pushButtons.b())  // buttonB
   {
   }
-  
-#ifdef display_OLED
-  u8g2.firstPage();
-  do {
-    u8g2.drawFrame(0, 0, 127, 63);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr( 5, 20, displayText);
-    u8g2.drawTriangle (5+(pos*14), 18, 16+(pos*14), 18, 11+(pos*14), 10);
-    u8g2.drawTriangle (5+(pos*14), 40, 16+(pos*14), 40, 11+(pos*14), 48);
-  } while ( u8g2.nextPage() );
-#endif
-//  delay (100);
 }
 
 void formTime (char* txt)
@@ -386,13 +403,25 @@ void formDate (char* txt)
   tmpTxt[9] = (year() % 10) + 48;  
   strcpy (txt, tmpTxt);
 }
+
 void loop()
 {
   pushButtons.update();
 #ifdef debug_serial
   Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
-  Serial.println("displayText : " + String(displayText));
+  Serial.println("millis() : " + String (millis()));
 #endif
+
+  switch (displayMode) {
+    case displayModeTime:
+      if (pushButtons.longPressA()) {
+        displayMode = displayModeTimeSet;
+      }
+      break;
+    case displayModeTimeSet:
+      settingTime();
+      break;
+  }
 
 #ifdef display_SevenSegment
     showDisplay7Seg();
@@ -419,8 +448,8 @@ void loop()
           u8g2.drawStr(29, 10, displayText);
         }
         break;
-      case displayModeSetTime: {
-          u8g2.drawFrame(0, 0, 127, 63, 3);
+      case displayModeTimeSet: {
+          u8g2.drawFrame(0, 0, 127, 63);
           u8g2.setFont(u8g2_font_inr16_mf);
           formTime(displayText);
           u8g2.drawStr(12, 20, displayText);
