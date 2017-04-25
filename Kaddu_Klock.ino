@@ -73,6 +73,9 @@ class buttons {
 
     status = (~PIND) & B11111100;  // read all 6 input pins buttons are connected at once through the hardware register
 
+#ifdef debug_serial
+  Serial.println("buttons : " + String (status));
+#endif
     // do an oldStatus XOR status to see if anything has changed 
     if (oldStatus^status)
     {
@@ -113,9 +116,20 @@ class buttons {
     if (status && 1>>buttonB) return (true);
     return (false);
   }
+
+  bool longPressA() {
+    if ((timeSincePressed[4] > 0) && (millis() - timeSincePressed[4]) >= 500) return (true);
+  }
+  
 };
 
 buttons pushButtons = buttons();
+
+const int displayModeTime = 1;
+const int displayModeDate = 2;
+const int displayModeTimeSet = 3;
+const int displayModeDateSet = 4;
+int displayMode = displayModeTime;
 
 char displayText[] = "1234567890"; // Placeholder for displayed text
 
@@ -296,10 +310,6 @@ void settingTime()
     }
   }
 
-#ifdef debug_serial
-  Serial.println("buttonLeft : " + String (buttons & (16)));
-#endif
-
   if (pushButtons.left())  // buttonLeft
   {
     pos--;
@@ -314,7 +324,6 @@ void settingTime()
     }
   }
 
-//  Serial.println("buttonRight : " + String (buttons & (32)));
   if (pushButtons.right())  // buttonRight
   {
     pos++;
@@ -350,15 +359,36 @@ void settingTime()
 //  delay (100);
 }
 
+void formTime (char* txt)
+{
+  char tmpTxt[11] = "00:00:00";
+
+  tmpTxt[0] = (hour() / 10) + 48;
+  tmpTxt[1] = (hour() % 10) + 48;  
+  tmpTxt[3] = (minute() / 10) + 48;
+  tmpTxt[4] = (minute() % 10) + 48;  
+  tmpTxt[6] = (second() / 10) + 48;
+  tmpTxt[7] = (second() % 10) + 48;  
+  strcpy (txt, tmpTxt);
+}
+
+void formDate (char* txt)
+{
+  char tmpTxt[11] = "00/00-2000";
+
+  tmpTxt[0] = (day() / 10) + 48;
+  tmpTxt[1] = (day() % 10) + 48;  
+  tmpTxt[3] = (month() / 10) + 48;
+  tmpTxt[4] = (month() % 10) + 48;  
+  tmpTxt[6] = (year() / 1000) + 48;
+  tmpTxt[7] = ((year() / 100) % 10) + 48;  
+  tmpTxt[8] = ((year() / 10) % 10) + 48;  
+  tmpTxt[9] = (year() % 10) + 48;  
+  strcpy (txt, tmpTxt);
+}
 void loop()
 {
-//  handleButtons();
-  
-#ifdef debug_serial
-  Serial.println(buttons); // show buttons pressed
-#endif
-
-
+  pushButtons.update();
 #ifdef debug_serial
   Serial.println("Current time : " + String(hour()) + ":" + String(minute()) + ":" + String(second()) + " " + String(day()) + "/" + String(month()) + "-" + String(year()));
   Serial.println("displayText : " + String(displayText));
@@ -378,34 +408,26 @@ void loop()
 #ifdef display_OLED
   u8g2.firstPage();
   do {
-    u8g2.drawRFrame(0, 0, 127, 63, 3);
-    u8g2.setFont(u8g2_font_inr16_mf);
-    displayText[0] = (hour() / 10) + 48;
-    displayText[1] = (hour() % 10) + 48;  
-    displayText[2] = ':';
-    displayText[3] = (minute() / 10) + 48;
-    displayText[4] = (minute() % 10) + 48;  
-    displayText[5] = ':';
-    displayText[6] = (second() / 10) + 48;
-    displayText[7] = (second() % 10) + 48;  
-    displayText[8] = 0;
-    u8g2.drawStr(12, 30, displayText);
-
-    displayText[0] = (day() / 10) + 48;
-    displayText[1] = (day() % 10) + 48;  
-    displayText[2] = '/';
-    displayText[3] = (month() / 10) + 48;
-    displayText[4] = (month() % 10) + 48;  
-    displayText[5] = '-';
-    displayText[6] = (year() / 1000) + 48;
-    displayText[7] = ((year() / 100) % 10) + 48;  
-    displayText[8] = ((year() / 10) % 10) + 48;  
-    displayText[9] = (year() % 10) + 48;  
-    displayText[10] = 0;
-    u8g2.setFont(u8g2_font_7x14B_mf);
-    u8g2.drawStr(29, 10, displayText);
+    switch (displayMode) {
+      case displayModeTime: {
+          u8g2.drawRFrame(0, 0, 127, 63, 3);
+          u8g2.setFont(u8g2_font_inr16_mf);
+          formTime(displayText);
+          u8g2.drawStr(12, 30, displayText);
+          formDate(displayText);
+          u8g2.setFont(u8g2_font_7x14B_mf);
+          u8g2.drawStr(29, 10, displayText);
+        }
+        break;
+      case displayModeSetTime: {
+          u8g2.drawFrame(0, 0, 127, 63, 3);
+          u8g2.setFont(u8g2_font_inr16_mf);
+          formTime(displayText);
+          u8g2.drawStr(12, 20, displayText);
+        }
+        break;
+    }
   } while ( u8g2.nextPage() );
 #endif
-//  delay (100);
 }
 
