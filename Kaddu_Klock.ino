@@ -111,22 +111,22 @@ class buttons {
   }
 
   bool up() {
-    if (status && 1>>buttonUp) return (true);
+    if (status && (1>>buttonUp)) return (true);
     return (false);
   }
 
   bool down() {
-    if (status && 1>>buttonDown) return (true);
+    if (status && (1>>buttonDown)) return (true);
     return (false);
   }
 
   bool left() {
-    if (status && 1>>buttonLeft) return (true);
+    if (status && (1>>buttonLeft)) return (true);
     return (false);
   }
 
   bool right() {
-    if (status && 1>>buttonRight) return (true);
+    if (status && 1>>(buttonRight)) return (true);
     return (false);
   }
 
@@ -369,6 +369,16 @@ void settingTime()
 
   if (pushButtons.a())  // buttonA
   {
+    pos++;
+    switch (pos) {
+      case 2:
+      case 5:
+        pos++;
+        break;
+      case 8:
+        pos = 1;
+        break;
+    }
   }
 
   if (pushButtons.b())  // buttonB
@@ -420,6 +430,9 @@ void loop()
       break;
     case displayModeTimeSet:
       settingTime();
+      if (pushButtons.longPressA()) {
+        displayMode = displayModeTime;
+      }
       break;
   }
 
